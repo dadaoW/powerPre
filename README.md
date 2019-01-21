@@ -1,4 +1,4 @@
-# project name:powerPre
+# Project-Name:PowerPre
 Forscasting the power distribution by the machine learning method - randomforest
 # part1:DataUpdate
 It's to pload the model-needed data(table) to the R global env, and to update(add new) data to the table.
