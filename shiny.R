@@ -34,6 +34,7 @@ library(leaflet)
 library(shinyjs)
 library(weatherr)
 library(RMySQL)
+
 Logged = FALSE
 my_username <- "test"
 my_password <- "test"
@@ -60,41 +61,84 @@ ui2 <- dashboardPage(
         tabItem
         (
           tabName = "table",
-                sidebarLayout
+          tabsetPanel(
+            type = "tab",id = "tabsetPanel_data",
+            tabPanel(
+              "数据预览",
+              sidebarLayout
+              (
+                #position = "right",
+                sidebarPanel
                 (
-                  position = "right",
-                  sidebarPanel
-                  (
-                    h4("select what you want here"),
-                    fileInput(inputId = "file",label = "Upload your data!"),
-                    actionButton(inputId = "upload_action",label = "Apply"),
-                    
-                    
-                    bookmarkButton(id = "bookmark")
-                    #checkboxInput(inputId = "header",label = "Header",value = FALSE),
-                    #checkboxInput(inputId = "stringAsFactor",label = "stringAsFactor",value = FALSE),
-                    #radioButtons(inputId = 'sep',label = 'Separator',choices = c(Comma=',',Semicolon=';',Tab='\t',Space=' ')
-                    #             ,selected = ","),
-                    
-                    #selectInput("select2", h3("Select city"), choices = 
-                    #              list("广州" = 'guangzhou', "南昌" = 'nanchang',
-                    #                   "北京" = 'beijing'), selected = 2),
-                    #dateInput("date2", h3("Date input"), value = "2018-03-03")
-                    #,#downloadButton("downloadData", "Download"),
-                    #
-                    #checkboxGroupInput("show_vars", "Columns in tables to show:",
-                    #                   c("date"="date","highDegree"="highDegree","lowDegree"="lowDegree", "weather"="weather","windDirection"="windDirection"), selected = c("date"="date","highDegree"="highDegree","lowDegree"="lowDegree", "weather"="weather","windDirection"="windDirection")
-                                       
-                    #)
-                  ),
-                  mainPanel(
-                    
-                    #DT::dataTableOutput('data_table')%>% withSpinner(type=4)
-                    uiOutput("tb")
-                  
-                  )
+                  #h3("数据预览"),
+                  actionButton(inputId = "data_look",label = "预览最新数据")
+                  ,br()
+                  ,br()
+                  ,downloadButton("downloadData2", "下载")
+                  ,br()
+                  ,br()
+                  ,bookmarkButton(id = "bookmark","bookmark")
+                ),
+                mainPanel(
+                  DT::dataTableOutput('data_table_look') %>% withSpinner(type=4)
                 )
+              )            
+            )
+          ,tabPanel(
+            "数据上传",
+            sidebarLayout
+            (
+              #position = "right",
+              sidebarPanel
+              (
+                h3("上传数据"),
+                fileInput(inputId = "file",label = h4("请选择上传文件路径")),
+                actionButton(inputId = "upload_action",label = "开始上传并显示最后六条记录")
+              ),
+              mainPanel(
+                #DT::dataTableOutput('data_table') %>% withSpinner(type=4)
+                uiOutput("tb")
+              )
+            )            
+          )
+          ,tabPanel(
+            "数据追加",
+            sidebarLayout
+            (
+              sidebarPanel
+              (
                 
+                h3("追加数据"),
+                fileInput(inputId = "file_add",label = h4("请选择追加文件路径")),
+                actionButton(inputId = "upload_action_add",label = "开始上传并显示最后六条记录")
+              ),
+              mainPanel(
+                #DT::dataTableOutput('data_table') %>% withSpinner(type=4)
+                uiOutput("tb_added")
+              )
+            )            
+          )
+          ,tabPanel(
+            "模型训练",
+            sidebarLayout
+            (
+              sidebarPanel
+              (
+                h3("模型训练")
+                ,br()
+                ,actionButton(inputId = "existed_data_use",label = "用已存数据训练模型")
+                ,br()
+                ,br()
+                ,actionButton(inputId = "local_data_use",label = "用本地数据训练模型")
+              ),
+              mainPanel(
+                #DT::dataTableOutput('data_table')%>% withSpinner(type=4)
+                #textOutput()
+                
+              )
+            )            
+          )
+        )
         ),
         
         tabItem
@@ -109,7 +153,7 @@ ui2 <- dashboardPage(
                     (
                      sidebarPanel
                       (
-                       textInput("reload_channels", h3("换料通道"), value = "")
+                       textInput("reload_channels", h4("换料通道"), value = "")
                        ,textInput("yewei_avg", label=h4("平均液位△"),value = "")
                        #,actionButton(inputId = "clear_the_matrix",label = "Clear")
                        ,actionButton(inputId = "predict_action",label = "Apply")
@@ -120,7 +164,7 @@ ui2 <- dashboardPage(
                       (
                        wellPanel
                         (
-                         #DT::dataTableOutput('table4')%>% withSpinner(type=4)
+                         #DT::dataTableOutput('table4') %>% withSpinner(type=4)
                          #?column()
                          #?fluidRow()
                          titlePanel(title = h4("14区域液位值")),
@@ -128,7 +172,7 @@ ui2 <- dashboardPage(
                                     ,textInput("3", label = "区域3", value = ""),offset = 4,style='padding:0px;'
                                     #,tags$style(type="text/css", "#string { height: 50px; width: 100%; text-align:center; font-size: 30px; display: block;}")
                                     )
-                                 ,column(width = 2
+                                  ,column(width = 2
                                      ,textInput("10", label = "区域10", value = "")
                                      ,offset = 0,style='padding:0px;'))
                          ,fluidRow(column(width = 2
@@ -172,17 +216,17 @@ ui2 <- dashboardPage(
                          #?fluidRow()#最多12个列
                          fluidRow(column(width = 2
                                     ,textInput("3", label = "区域3", value = ""),offset = 4,style='padding:0px;')
-                                 ,column(width = 2
+                                  ,column(width = 2
                                     ,textInput("10", label = "区域10", value = "")
                                     ,offset = 0,style='padding:0px;'))
                          ,fluidRow(column(width = 2
                                     ,textInput("1", label = "区域1", value = ""),offset = 1,style='padding:0px;')
-                                 ,column(width = 2
+                                  ,column(width = 2
                                     ,textInput("8", label = "区域8", value = "")
                                     ,offset = 0,style='padding:0px;')
-                                 ,column(width = 2
+                                  ,column(width = 2
                                     ,textInput("6", label = "区域6", value = ""),offset = 2,style='padding:0px;')
-                                 ,column(width = 2
+                                  ,column(width = 2
                                     ,textInput("13", label = "区域13", value = "")
                                     ,offset = 0,style='padding:0px;'))
                          ,fluidRow(column(width = 2
@@ -232,8 +276,10 @@ ui2 <- dashboardPage(
                        sidebarPanel(
                          #textInput("reload_channels2", h3("reload_channels2"), value = "")
                          #,
-                         actionButton(inputId = "predict_action3",label = "Apply")
-                         ,downloadButton("downloadData", "下载")
+                         actionButton(inputId = "predict_action3",label = "预测")
+                         ,br()
+                         ,br()
+                         ,downloadButton("downloadData", label = "结果下载")
                          #,downloadButton("downloadData", "Download")
                        ),
                        mainPanel(
@@ -247,9 +293,7 @@ ui2 <- dashboardPage(
         
         
         
-        
-        
-        
+
         tabItem(tabName = "feedback",
                 sidebarLayout(
                   sidebarPanel(
@@ -275,12 +319,21 @@ ui2 <- dashboardPage(
                   ),
                   mainPanel(
                     
-                    img(src="https://s1.ax1x.com/2018/04/15/CeieW6.png",width=200,height=200),
+                    img(src="F:/RWD/shiny3/caini_20190123103629.png",width=400,height=200),
                     br(),
                     h2("Haide",aign="center"),
                     h3("a simple weather application powered by shiny",align="left"),
-                    h5("technology used: ",",",a("R",href="https://www.r-project.org/"),",", a("shiny",href="http://shiny.rstudio.com/") ,",", "Crawler" ,",", a("ggplot2",href="http://ggplot2.org/")),
-                    h5("library used:", a("shiny",href="http://shiny.rstudio.com/") , a("DT"), a("ggplot2",href="http://ggplot2.org/"), a("ggthemr",href="https://cran.r-project.org/web/packages/ggthemes/index.html"), a("plyr",href="https://cran.r-project.org/web/packages/plyr/index.html"), a("rvest",href="https://cran.r-project.org/web/packages/rvest/index.html"),a("weatherR",href="https://cran.r-project.org/web/packages/weatherr/index.html"))
+                    h5("technology used: ",","
+                       , a("R",href="https://www.r-project.org/"),","
+                       , a("shiny",href="http://shiny.rstudio.com/") ,",", "Crawler" ,","
+                       , a("ggplot2",href="http://ggplot2.org/")),
+                    h5("library used:", a("shiny",href="http://shiny.rstudio.com/") 
+                       , a("DT")
+                       , a("ggplot2",href="http://ggplot2.org/")
+                       , a("ggthemr",href="https://cran.r-project.org/web/packages/ggthemes/index.html")
+                       , a("plyr",href="https://cran.r-project.org/web/packages/plyr/index.html")
+                       , a("rvest",href="https://cran.r-project.org/web/packages/rvest/index.html")
+                       , a("weatherR",href="https://cran.r-project.org/web/packages/weatherr/index.html"))
                     ,includeMarkdown("log.md")
                   )                    
                 )
@@ -305,42 +358,110 @@ server <- function(input, output,session) {
   })
   
   output$data_table <- DT::renderDataTable(
+    DT::datatable({
     if(is.null(data())){return()} 
-    else{tail(data())[,1:10]}
+    else{tail(data())[,1:31]}
+    },
+    #下面的options还有待完善。
+   options = list(columnDefs = list(list(className = 'dt-center',targets = 0:30),
+                                    list(width=2,targets = 0:30)),
+                  pageLength = 25,
+                  fixedHeader.header = TRUE,
+                  scrollX = TRUE,
+                  autoWidth = TRUE,
+                  scrollY = 250
+                  ,paging = FALSE
+                  ,fixedColumns.leftColumns = 1
+                  ,searching = FALSE
+                  ,filtering = FALSE
+                  ,ordering = FALSE
+                  ,scroller.loadingIndicator = TRUE
+   )
     )
+  )
   output$tb <- renderUI({
     if(is.null(data())){}
     else DT::dataTableOutput('data_table')%>% withSpinner(type=4)
   })
   
-  #done_re <- reactive({
-  #  input$predict_action
-  #  #style = isolate(input$style)
-  #  
-  #  #-----
-  #  
-  #  #-----
-  #  if(isolate(input$reload_channels) == ""){
-  #    done}
-  #  else{
-  #    #output$op_info <- start_info
-  #    #rm(power_distribution_matrix)
-  #    powerpre <- PowerPre(fpd = "5068.7-2",reload_channels=isolate(input$reload_channels),yewei_avg=FALSE
-  #                         ,yewei_14=FALSE,yewei_delta=FALSE
-  #                         ,dwnld_power = FALSE,save_rdata = FALSE)
-  #    
-  #    done
-  #    #output$op_info <- end_info
-  #  }
-  #})
-  #
-  #output$done <- renderText({
-  #  done_re()
-  #})
+  data_add <- reactive({
+    input$upload_action_add
+    file2 <- isolate(input$file_add)
+    if(is.null(file2)){return()}
+    else{
+      #read.csv(file1$datapath)
+      DataUpdate(data_source_path=FALSE
+                 ,newdata_path=file2$datapath,dwnld_data = FALSE,save_rdata = FALSE)
+      data_1022
+    }
+  })
+  
+  output$data_table_added <- DT::renderDataTable(
+    DT::datatable({
+      if(is.null(data_add())){return()}
+      else{tail(data_add())[,1:31]}
+    },
+    #下面的options还有待完善。
+    options = list(columnDefs = list(list(className = 'dt-center',targets = 0:30),
+                                     list(width=2,targets = 0:30)),
+                   pageLength = 25,
+                   fixedHeader.header = TRUE,
+                   scrollX = TRUE,
+                   autoWidth = TRUE,
+                   scrollY = 250
+                   ,paging = FALSE
+                   ,fixedColumns.leftColumns = 1
+                   ,searching = FALSE
+                   ,filtering = FALSE
+                   ,ordering = FALSE
+                   ,scroller.loadingIndicator = TRUE
+    )
+    )
+  )
+  output$tb_added <- renderUI({
+    if(is.null(data_add())){}
+    else DT::dataTableOutput('data_table_added')%>% withSpinner(type=4)
+  })
+  
+  
+  output$data_table_look <- DT::renderDataTable(DT::datatable({
+    #"scrollX": true
+    input$data_look
+    #style = isolate(input$style)
+    data_1022[,1:31]
+  },
+  #下面的options还有待完善。
+  options = list(columnDefs = list(list(className = 'dt-center',targets = 0:22),
+                                   list(width=2,targets = 0:22)),
+                 pageLength = 25,
+                 fixedHeader.header = TRUE,
+                 scrollX = TRUE,
+                 autoWidth = TRUE,
+                 scrollY = 300
+                 ,paging = FALSE
+                 ,fixedColumns.leftColumns = 1
+                 ,searching = FALSE
+                 ,filtering = FALSE
+                 ,ordering = FALSE
+                 ,scroller.loadingIndicator = TRUE
+  )
+  ))
+  
+  output$downloadData2 <- downloadHandler(
+    filename = function() {
+      paste('data-', Sys.Date(), '.csv', sep='')
+    },
+    content = function(con) {
+      data <- data_1022
+      write.csv(data,con,row.names = TRUE)
+    }
+  )
+
+  
+  
   
   
   output$table4 <- DT::renderDataTable(DT::datatable({
-    #"scrollX": true
     input$predict_action
     #style = isolate(input$style)
 
