@@ -41,7 +41,7 @@ PowerPre <- function(fpd = FALSE,reload_channels=FALSE,yewei_avg=FALSE
   data_input <- cbind(data_1217_train[nrow(data_1217_train),1:410]
                       ,reload_and_unreload_channels
                       ,data_1217_train[nrow(data_1217_train),791:1170])
-  
+  #print(data_input[1:6,1:2])
   channel_matrix <- matrix(data = 0,ncol = 22,nrow = 22)#通道分布矩阵
   colnames(channel_matrix) <- (1:22)#通道分布列名
   rownames(channel_matrix) <- LETTERS[seq(1,23)][-9]#通道分布行名
