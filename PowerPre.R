@@ -25,8 +25,8 @@ PowerPre <- function(fpd = FALSE,reload_channels=FALSE,yewei_avg=FALSE
   #test---end---
   #if(length(ls()[substring(ls(),1,3) == "rf_" & nchar(ls()) == 6]) == 2){
   #  print("part2")
-    
-
+  
+  
   library(randomForest)
   m_test <- matrix(data = 0,nrow = 1,ncol = 380)
   colnames(m_test) <- channel_total
@@ -97,25 +97,25 @@ PowerPre <- function(fpd = FALSE,reload_channels=FALSE,yewei_avg=FALSE
     rf_name <- paste0("rf_",channel_name)
     #rf = get(ls()[rf_name == ls()])#得到某通道的模型
     if(exists(rf_name)){
-    rf = get(rf_name)
-    reload_train <- apply(f(channel_matrix,channel_m_c,channel_m_r,1,0,data_input[,((411:790))])
-                          ,FUN = sum,MARGIN = 1)*2 +
-      apply(f(channel_matrix,channel_m_c,channel_m_r,2,1,data_input[,((411:790))])
-            ,FUN = sum,MARGIN = 1)*1 +
-      f(channel_matrix,channel_m_c,channel_m_r,0,0,data_input[,((411:790))])*10
-    
-    model_input  <-  cbind(data_input[,c(2:30,i+30,(411:790),i+790)]
-                           ,reload_train)#[reload_train < 10,]
-    model_target <- predict(rf,model_input)
-    power <- model_target+data_input[,i+790]
-    channel_matrix[channel_m_r,channel_m_c] <- round(power)
-    done <<- c(done,channel_name)
-    #print(done)
+      rf = get(rf_name)
+      reload_train <- apply(f(channel_matrix,channel_m_c,channel_m_r,1,0,data_input[,((411:790))])
+                            ,FUN = sum,MARGIN = 1)*2 +
+        apply(f(channel_matrix,channel_m_c,channel_m_r,2,1,data_input[,((411:790))])
+              ,FUN = sum,MARGIN = 1)*1 +
+        f(channel_matrix,channel_m_c,channel_m_r,0,0,data_input[,((411:790))])*10
+      
+      model_input  <-  cbind(data_input[,c(2:30,i+30,(411:790),i+790)]
+                             ,reload_train)#[reload_train < 10,]
+      model_target <- predict(rf,model_input)
+      power <- model_target+data_input[,i+790]
+      channel_matrix[channel_m_r,channel_m_c] <- round(power)
+      done <<- c(done,channel_name)
+      #print(done)
     }
     else{channel_matrix[channel_m_r,channel_m_c] <- "no_model"}
     assign("power_distribution_matrix",channel_matrix,envir=.GlobalEnv)
   }
-
+  
   end_info <<- "The power_distribution_matrix has finished!!!"
   print(end_info)
   
@@ -124,7 +124,7 @@ PowerPre <- function(fpd = FALSE,reload_channels=FALSE,yewei_avg=FALSE
     write.csv(channel_matrix,filename)
     print("Write power-distribution-matrix successfully!")
   }
-#模型复用部分---end。
+  #模型复用部分---end。
   if(save_rdata != FALSE){
     save.image("./hstr2.RData")
   }
