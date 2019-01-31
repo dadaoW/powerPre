@@ -46,7 +46,7 @@ Remodelling <- function(local_data = FALSE,local_path = FALSE
   data_1217_train <- data_1217_use[1:nrow(data_1217_use),]#100%作为训练集。
   assign("data_1217_train",data_1217_train,envir=.GlobalEnv)
   #data_1217_test <- data_1217_use[ceiling(nrow(data_1217_use)*0.9):nrow(data_1217_use),]#10%作为测试集。
-
+  
   channel_matrix <- matrix(data = 0,ncol = 22,nrow = 22)#通道分布矩阵
   colnames(channel_matrix) <- (1:22)#通道分布列名
   rownames(channel_matrix) <- LETTERS[seq(1,23)][-9]#通道分布行名
@@ -102,38 +102,40 @@ Remodelling <- function(local_data = FALSE,local_path = FALSE
   }
   #追踪周边通道，[自定义],里面会用到对象channel_total。
   library(randomForest)
-  for (i in 1:30) {
-  channel_name <- unlist(strsplit(channel_list[i],"[.]"))[1]
-  rf_name <- paste0("rf_",channel_name)
-  
-  channel_m_r <- unlist(strsplit(channel_list[i],""))[1]
-  channel_m_c <- as.numeric(paste(unlist(strsplit(channel_list[i],""))[2]
-                                  ,unlist(strsplit(channel_list[i],""))[3],sep=""))
-  reload_train <- apply(f(channel_matrix,channel_m_c,channel_m_r,1,0,data_1217_train[,((411:790))])
-                        ,FUN = sum,MARGIN = 1)*2 +
-    apply(f(channel_matrix,channel_m_c,channel_m_r,2,1,data_1217_train[,((411:790))])
-          ,FUN = sum,MARGIN = 1)*1 +
-    f(channel_matrix,channel_m_c,channel_m_r,0,0,data_1217_train[,((411:790))])*10
-  
-  train_input = cbind(data_1217_train[,c(2:30,i+30,(411:790),i+790)],reload_train)
-  train_target = data_1217_train[,(i+1170)]
-
-  rf <- randomForest(train_input,train_target,type = "regression",ntree = 500)
-  assign(rf_name,rf,envir=.GlobalEnv)#将模型储存到环境中，以备复用。
-  print(paste0(rf_name," model has finished successfully!"))
-#  if(pre_ornot == TRUE){
-#    reload_train <- apply(f(channel_matrix,channel_m_c,channel_m_r,1,0,data_1217_test[,((411:790))])
-#                          ,FUN = sum,MARGIN = 1)*2 +
-#      apply(f(channel_matrix,channel_m_c,channel_m_r,2,1,data_1217_test[,((411:790))])
-#            ,FUN = sum,MARGIN = 1)*1 +
-#      f(channel_matrix,channel_m_c,channel_m_r,0,0,data_1217_test[,((411:790))])*10
-#    test_input  <-  cbind(data_1217_test[,c(2:30,i+30,(411:790),i+790)]
-#                          ,reload_train)[reload_train < 10,]
-#    p <- predict(rf,test_input)
-#    return(p)
-#  }
+  for (i in 35:380) {
+    print(paste0("start model train!>>>>>>",Sys.time()))
+    channel_name <- unlist(strsplit(channel_list[i],"[.]"))[1]
+    rf_name <- paste0("rf_",channel_name)
+    
+    channel_m_r <- unlist(strsplit(channel_list[i],""))[1]
+    channel_m_c <- as.numeric(paste(unlist(strsplit(channel_list[i],""))[2]
+                                    ,unlist(strsplit(channel_list[i],""))[3],sep=""))
+    reload_train <- apply(f(channel_matrix,channel_m_c,channel_m_r,1,0,data_1217_train[,((411:790))])
+                          ,FUN = sum,MARGIN = 1)*2 +
+      apply(f(channel_matrix,channel_m_c,channel_m_r,2,1,data_1217_train[,((411:790))])
+            ,FUN = sum,MARGIN = 1)*1 +
+      f(channel_matrix,channel_m_c,channel_m_r,0,0,data_1217_train[,((411:790))])*10
+    
+    train_input = cbind(data_1217_train[,c(2:30,i+30,(411:790),i+790)],reload_train)
+    train_target = data_1217_train[,(i+1170)]
+    
+    rf <- randomForest(train_input,train_target,type = "regression",ntree = 500)
+    assign(rf_name,rf,envir=.GlobalEnv)#将模型储存到环境中，以备复用。
+    print(paste0(rf_name," model has finished successfully!>>>>>>",Sys.time()))
+    #  if(pre_ornot == TRUE){
+    #    reload_train <- apply(f(channel_matrix,channel_m_c,channel_m_r,1,0,data_1217_test[,((411:790))])
+    #                          ,FUN = sum,MARGIN = 1)*2 +
+    #      apply(f(channel_matrix,channel_m_c,channel_m_r,2,1,data_1217_test[,((411:790))])
+    #            ,FUN = sum,MARGIN = 1)*1 +
+    #      f(channel_matrix,channel_m_c,channel_m_r,0,0,data_1217_test[,((411:790))])*10
+    #    test_input  <-  cbind(data_1217_test[,c(2:30,i+30,(411:790),i+790)]
+    #                          ,reload_train)[reload_train < 10,]
+    #    p <- predict(rf,test_input)
+    #    return(p)
+    #  }
   }
-#模型训练部分---end。
+  #models <<- paste(ls()[substring(ls(),1,3) == "rf_"],collapse = ",")
+  #模型训练部分---end。
   #return(list(channel_list = channel_list,channel_total=channel_total))
   if(save_rdata != FALSE){
     save.image("./hstr.RData")
