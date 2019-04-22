@@ -1,0 +1,15 @@
+vpn连接需求方服务器，详细步骤要咨询需求方。
+
+select FPD as 满功率天
+       ,CHCODE as 通道编号
+       ,UNITCODE as 机组编号
+       ,PMCHPDISTRIBUTE as PM通道功率分布
+       ,PMRERGAIN as PM换料引起的反应性增益
+       ,PMAVGODBURNUP as PM平均出口卸料燃耗
+       ,PMMBP as PM最大棒束功率
+       ,CHRESIDENCETIME as 通道驻留时间
+from   cd_hwr_rfsp_channel
+where  UNITCODE like 'TQNPC-1'  
+       and FPD >= 5202.3 
+      
+order by FPD

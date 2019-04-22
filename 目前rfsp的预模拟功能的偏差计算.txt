@@ -1,0 +1,37 @@
+select 通道编号
+      ,avg(abs(PM通道功率分布-lag)/PM通道功率分布)
+      ,max(abs(PM通道功率分布-lag)/PM通道功率分布)
+from
+(
+select a.满功率天
+      ,a.通道编号
+      ,a.PM通道功率分布
+      ,b.PM通道功率分布_pre
+      ,lag(PM通道功率分布_pre,1) over (order by  a.通道编号, a.满功率天 asc) lag
+from
+(select FPD as 满功率天
+       ,CHCODE as 通道编号
+       ,PMCHPDISTRIBUTE as PM通道功率分布
+from   cd_hwr_rfsp_channel
+where  UNITCODE like 'TQNPC-1'  
+       --and FPD = 4807.3 
+       --and CHCODE = 'A09'
+order by CHCODE,FPD
+)a
+left outer join
+(
+select FPD as 满功率天
+       ,CHCODE as 通道编号
+       ,PRECHPDISTRIBUTE as PM通道功率分布_pre
+from   cd_hwr_rfsp_channel_pre
+where  UNITCODE like 'TQNPC-1'  
+       --and FPD = 4807.3 
+       --and CHCODE = 'A09'
+      
+order by CHCODE,FPD
+)b
+on a.满功率天 = b.满功率天 and a.通道编号 = b.通道编号
+order by a.通道编号, a.满功率天
+)c
+where lag is not null
+group by 通道编号

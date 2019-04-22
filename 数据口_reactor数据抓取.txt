@@ -1,0 +1,23 @@
+vpn连接需求方服务器，详细步骤要咨询需求方。
+
+select FPD as 满功率天
+       ,CALBCONCENTRATION as 计算出的硼浓度
+       ,INITAVGLVL as 初始平均液位
+       ,ZONEINITLVLDEV1 as 区域1初始液位偏差
+       ,ZONEINITLVLDEV2 as 区域2初始液位偏差
+       ,ZONEINITLVLDEV3 as 区域3初始液位偏差
+       ,ZONEINITLVLDEV4 as 区域4初始液位偏差
+       ,ZONEINITLVLDEV5 as 区域5初始液位偏差
+       ,ZONEINITLVLDEV6 as 区域6初始液位偏差
+       ,ZONEINITLVLDEV7 as 区域7初始液位偏差
+       ,ZONEINITLVLDEV8 as 区域8初始液位偏差
+       ,ZONEINITLVLDEV9 as 区域9初始液位偏差
+       ,ZONEINITLVLDEV10 as 区域10初始液位偏差
+       ,ZONEINITLVLDEV11 as 区域11初始液位偏差
+       ,ZONEINITLVLDEV12 as 区域12初始液位偏差
+       ,ZONEINITLVLDEV13 as 区域13初始液位偏差
+       ,ZONEINITLVLDEV14 as 区域14初始液位偏差
+from   CD_HWR_RFSP_REACTOR 
+where  UNITCODE like 'TQNPC-1'  
+       and FPD >= 2900 
+

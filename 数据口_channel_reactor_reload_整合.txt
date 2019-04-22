@@ -1,0 +1,35 @@
+下面脚本中所用到的两个文件channel1213_needed.csv和reactor1213_needed.csv格式可见文件中。
+channeldata <- read.csv("channel1213_needed.csv") #输入文件
+channeldata[1:10,]
+channel_data <- channeldata[,c(-1,-4,-5)] #去掉第一列和第四列
+channel_data[1:10,] #检验
+index <- duplicated(channel_data[,1]) #满功率日去重
+mpd_unique <- channel_data[!index,1] #满功率日去重
+index2 <- duplicated(channel_data[,2]) #通道去重
+channel_unique <- channel_data[!index2,2] #通道去重
+
+m <- matrix(data = c(1:length(mpd_unique)),nrow = length(mpd_unique),ncol = 1)
+
+
+for(j in seq(from = 3,to = ncol(channel_data[1,]))) {
+  m_0 <- matrix(data = 0,nrow = length(mpd_unique),ncol = length(channel_unique))
+  colnames(m_0) <- channel_unique
+  rownames(m_0) <- mpd_unique
+
+   for(i in seq(from = 1,to = length(channel_data[,1]))){
+       m_0[as.character(channel_data[i,1]),as.character(channel_data[i,2])] <- channel_data[i,j]
+   }
+  m_total <- cbind(m,m_0)
+  m <- m_total
+}
+write.csv(m_total,"m1213_total.csv") #目前是缺少380个通道的通道卸料燃耗和换料时间步长
+
+m_total[,1] <- rownames(m_total)
+colnames(m_total)[1] <- "满功率天"
+reactordata <- read.csv("reactor1213_needed.csv")
+reactordata[1:10,]
+reactor_data <- reactordata[,-1]
+
+reactor_channel_needed <- merge(reactor_data,m_total,by = "满功率天",all=T)
+#ncol(reactor_channel_needed)
+write.csv(reactor_channel_needed,"reactor_channel_needed1213.csv")
